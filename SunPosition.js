@@ -12,7 +12,7 @@ var getSunPosition = (function() {
       atan = m.atan2;
 
     var rad = PI/180,
-      dayMs = 1000*60*60*24,
+      dayMs = 1000*60*60*24, // 86400000
       J1970 = 2440588,
       J2000 = 2451545,
       e = rad*23.4397; // obliquity of the Earth

@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION Shadow(XOff decimal, YOff decimal, geom geometry, height decimal) RETURNS geometry
+CREATE OR REPLACE FUNCTION Shadow(sunpos geometry, geom geometry, height decimal) RETURNS geometry
 AS $$
 
 DECLARE
@@ -18,7 +18,16 @@ DECLARE
   _x2 decimal;
   _y2 decimal;
 
+  length decimal;
+  xOff decimal;
+  yOff decimal;
+  
 BEGIN
+	length = 1 / tan(st_y(sunpos));
+	xOff = cos(st_x(sunpos)) * length;
+	yOff = sin(st_x(sunpos)) * length;
+
+
   line = ST_ExteriorRing(geom);
 
   FOR i IN 0..ST_NPoints(line)-2 LOOP
@@ -69,6 +78,12 @@ END;
 $$ LANGUAGE plpgsql;
 
 
--- SELECT ST_ASTEXT(ST_GeomFromText('POLYGON ((10 20, 30 60, 50 20, 10 20))', 4326)) AS f, ST_ASTEXT(Shadow(50, 50, ST_GeomFromText('POLYGON ((10 20, 30 60, 50 20, 10 20))', 4326), 20)) AS s;
+-- SELECT ST_ASTEXT(ST_GeomFromText('POLYGON ((10 20, 30 60, 50 20, 10 20))', 4326)) AS f, ST_ASTEXT(Shadow(sunposition('2014-05-28 12:00:00+02', ST_PointFromText('POINT(15 10)')), ST_GeomFromText('POLYGON ((10 20, 30 60, 50 20, 10 20))', 4326), 20)) AS s;
 
-SELECT cartodb_id, Shadow(50, 50, the_geom_webmercator, 20) AS the_geom_webmercator FROM buildings
+SELECT ST_ASTEXT(Shadow(
+sunposition('2014-05-28 12:00:00+02', ST_PointFromText('POINT(15 10)')), 
+ST_GeomFromText('POLYGON ((10 20, 30 60, 50 20, 10 20))', 4326), 
+20)) AS s;
+
+
+--SELECT cartodb_id, Shadow(50, 50, the_geom_webmercator, 20) AS the_geom_webmercator FROM buildings
