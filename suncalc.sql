@@ -2,6 +2,11 @@
 --DROP FUNCTION suncalc;
 CREATE OR REPLACE FUNCTION suncalc(date timestamp with time zone, coord geometry) RETURNS geometry AS $$
 
+-- calculations based on agorithms from http://aa.quae.nl/en/reken/zonpositie.html
+-- code taken from Vladimir Agafonkin's (@mourner) SunCalc https://github.com/mourner/suncalc
+-- few modifications by Jan Marsch, OSM Buildings (@kekscom)
+-- code migration to PostgreSQL by Sören Horn, OSM Buildings (@SoerenHorn85)
+
 DECLARE
   rad decimal = PI()/180;
   day_ms decimal = 1000*60*60*24;
@@ -27,7 +32,7 @@ DECLARE
   h decimal;
   altitude decimal;
   azimuth decimal;
- 
+
 BEGIN
   date_ms = date_part('epoch', date);
   in_julian = date_ms/day_ms - 0.5 + j1970;
