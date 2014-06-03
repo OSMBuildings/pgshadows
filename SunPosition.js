@@ -50,16 +50,16 @@ var getSunPosition = (function() {
     }
 
     return function getSunPosition(date, lat, lon) {
-      var lw = rad*-lon,
-        phi = rad*lat,
+      var
         d = toDays(date),
         M = getSolarMeanAnomaly(d),
         C = getEquationOfCenter(M),
         L = getEclipticLongitude(M, C),
         D = getDeclination(L, 0),
         A = getRightAscension(L, 0),
-        t = getSiderealTime(d, lw),
-        H = t-A;
+        t = getSiderealTime(d, -rad*lon),
+        H = t-A,
+        phi = rad*lat;
 
       return {
         altitude: getAltitude(H, phi, D),
