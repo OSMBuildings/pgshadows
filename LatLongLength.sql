@@ -1,6 +1,10 @@
---DROP FUNCTION latlonglength(numeric);
+CREATE TYPE vector AS (
+  x double precision,
+  y double precision
+);
 
-CREATE OR REPLACE FUNCTION LatLongLength(degree double precision) RETURNS point
+-- DROP FUNCTION ST_GeoMeters(geometry);
+CREATE OR REPLACE FUNCTION ST_GeoMeters(position geometry) RETURNS vector
 AS $$
 
 DECLARE
@@ -13,18 +17,17 @@ DECLARE
   p3 decimal = 0.118; 
 
   lat decimal;
-  latlen decimal;
-  longlen decimal;
+  lat_len decimal;
+  lon_len decimal;
   
 BEGIN 
-lat = degree * PI() / 180.0;
+  lat = ST_Y(position) * PI()/180.0;
+  lat_len  = m1 + (m2 * COS(2 * lat)) + (m3 * COS(4 * lat)) + (m4 * COS(6 * lat));
+  lon_len = (p1 * COS(lat)) + (p2 * COS(3 * lat)) + (p3 * COS(5 * lat));
 
-latlen  = m1 + (m2 * COS(2 * lat)) + (m3 * COS(4 * lat)) + (m4 * COS(6 * lat));
-longlen = (p1 * COS(lat)) + (p2 * COS(3 * lat)) + (p3 * COS(5 * lat));
-
-RETURN (longlen, latlen);
-
+  RETURN ROW(lon_len, lat_len);
 END;
+
 $$ LANGUAGE plpgsql;
 
-SELECT LatLongLength(13.5);
+-- SELECT ST_GeoMeters(...);

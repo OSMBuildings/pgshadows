@@ -1,5 +1,10 @@
-﻿-- DROP FUNCTION suncalc(timestamp, geometry);
-CREATE OR REPLACE FUNCTION suncalc(date timestamp, coord geometry) RETURNS point AS $$
+﻿CREATE TYPE vector AS (
+  x double precision,
+  y double precision
+);
+
+-- DROP FUNCTION suncalc(timestamp, geometry);
+CREATE OR REPLACE FUNCTION suncalc(date timestamp, coord geometry) RETURNS vector AS $$
 
 -- calculations based on algorithms from http://aa.quae.nl/en/reken/zonpositie.html
 -- code taken from Vladimir Agafonkin's (@mourner) SunCalc https://github.com/mourner/suncalc
@@ -45,7 +50,7 @@ BEGIN
   altitude = ASIN(SIN(phi)*SIN(declination) + COS(phi)*COS(declination)*COS(h));
   azimuth  = (ATAN2(SIN(h), COS(h)*SIN(phi) - TAN(declination)*COS(phi))) - PI()/2;
 
-  RETURN (azimuth, altitude);
+  RETURN ROW(azimuth, altitude);
 END;
 
 $$ LANGUAGE plpgsql;
