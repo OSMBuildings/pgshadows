@@ -1,3 +1,5 @@
+// http://fmepedia.safe.com/articles/How_To/Calculating-accurate-length-in-meters-for-lat-long-coordinate-systems
+
 function compute(deg) {
 
   lat = deg * Math.PI / 180.0;
