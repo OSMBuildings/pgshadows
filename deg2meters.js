@@ -14,6 +14,8 @@ function compute(deg) {
   // Calculate the length of a degree of latitude and longitude in meters
   latlen  = m1 + (m2 * Math.cos(2 * lat)) + (m3 * Math.cos(4 * lat)) + (m4 * Math.cos(6 * lat));
   longlen = (p1 * Math.cos(lat)) + (p2 * Math.cos(3 * lat)) + (p3 * Math.cos(5 * lat));
+  
+  return [latlen,longlen];
 }
 
 
