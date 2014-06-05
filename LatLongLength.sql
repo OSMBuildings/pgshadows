@@ -1,4 +1,6 @@
-CREATE OR REPLACE FUNCTION LatLongLength(degree decimal) RETURNS point
+--DROP FUNCTION latlonglength(numeric);
+
+CREATE OR REPLACE FUNCTION LatLongLength(degree double precision) RETURNS point
 AS $$
 
 DECLARE
@@ -20,7 +22,7 @@ lat = degree * PI() / 180.0;
 latlen  = m1 + (m2 * COS(2 * lat)) + (m3 * COS(4 * lat)) + (m4 * COS(6 * lat));
 longlen = (p1 * COS(lat)) + (p2 * COS(3 * lat)) + (p3 * COS(5 * lat));
 
-RETURN (latlen, longlen);
+RETURN (longlen, latlen);
 
 END;
 $$ LANGUAGE plpgsql;
