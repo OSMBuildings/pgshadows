@@ -1,4 +1,4 @@
-﻿-- DROP FUNCTION suncalc(timestamp with time zone, geometry);
+﻿-- DROP FUNCTION suncalc(timestamp, geometry);
 CREATE OR REPLACE FUNCTION suncalc(date timestamp, coord geometry) RETURNS point AS $$
 
 -- calculations based on agorithms from http://aa.quae.nl/en/reken/zonpositie.html
@@ -39,11 +39,11 @@ BEGIN
   equation_of_center = rad * (1.9148*SIN(solar_mean_anomaly) + 0.0200*SIN(2*solar_mean_anomaly) + 0.0003*SIN(3*solar_mean_anomaly));
   ecliptic_longitude = solar_mean_anomaly + equation_of_center + rad*102.9372 + PI();
   declination = ASIN(SIN(0)*COS(e) + COS(0)*SIN(e)*SIN(ecliptic_longitude));
-  right_ascension = ATAN2(SIN(ecliptic_longitude)*COS(e) - tan(0)*SIN(e), COS(ecliptic_longitude));
+  right_ascension = ATAN2(SIN(ecliptic_longitude)*COS(e) - TAN(0)*SIN(e), COS(ecliptic_longitude));
   sidereal_time = rad * (280.16 + 360.9856235*in_julian) - lw;
   h = sidereal_time - right_ascension;
   altitude = ASIN(SIN(phi)*SIN(declination) + COS(phi)*COS(declination)*COS(h));
-  azimuth  = (ATAN2(SIN(h), COS(h)*SIN(phi) - tan(declination)*COS(phi))) - PI()/2;
+  azimuth  = (ATAN2(SIN(h), COS(h)*SIN(phi) - TAN(declination)*COS(phi))) - PI()/2;
 
   RETURN (azimuth, altitude);
 END;
