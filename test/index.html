@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="suncalc.js"></script>
+<script src="geometers.js"></script>
+<script src="shadow.js"></script>
+<script>
+var dateStr = '2014-05-15T07:00:00';
+var lat = 52.54;
+var lon = 13.44;
+var coordinates = [
+  { x:13.44189, y:52.54334 },
+  { x:13.44271, y:52.54299 },
+  { x:13.44336, y:52.54356 },
+  { x:13.44253, y:52.54391 },
+  { x:13.44189, y:52.54334 }
+];
+
+var sunPos = suncalc(new Date(dateStr), lat, lon);
+console.log('SUN POS >>', dateStr, lat, lon, sunPos);
+
+var length = Math.tan(sunPos.altitude);
+var vec = {
+  x: Math.cos(sunPos.azimuth) / length,
+  y: Math.sin(sunPos.azimuth) / length
+};
+
+console.log('SUN VECTOR >>', vec);
+
+console.log('DEG TO METERS >>', lat, geometers(lat));
+
+console.log('SHADOW >>', JSON.stringify(shadow(new Date(dateStr), { x:13.44, y:52.54 }, coordinates, 20)));
+</script>
+</head>
+</html>

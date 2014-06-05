@@ -1,7 +1,7 @@
 // calculations are based on http://aa.quae.nl/en/reken/zonpositie.html
 // code credits to Vladimir Agafonkin (@mourner)
 
-var getSunPosition = (function() {
+var suncalc = (function() {
 
     var m = Math,
       PI = m.PI,

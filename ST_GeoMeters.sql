@@ -1,21 +1,26 @@
-﻿-- DROP FUNCTION ST_GeoMeters(geometry);
+-- http://geography.about.com/library/faq/blqzdistancedegree.htm
+-- http://fmepedia.safe.com/articles/How_To/Calculating-accurate-length-in-meters-for-lat-long-coordinate-systems
+-- http://www.movable-type.co.uk/scripts/latlong.html
+-- http://www.csgnetwork.com/degreelenllavcalc.html
+
+-- DROP FUNCTION ST_GeoMeters(geometry);
 CREATE OR REPLACE FUNCTION ST_GeoMeters(point geometry) RETURNS vector
 AS $$
 
 DECLARE
-  m1 decimal = 111132.92; 
-  m2 decimal = -559.82; 
-  m3 decimal = 1.175; 
-  m4 decimal = -0.0023; 
-  p1 decimal = 111412.84; 
-  p2 decimal = -93.5; 
-  p3 decimal = 0.118; 
+  m1 decimal = 111132.92;
+  m2 decimal = -559.82;
+  m3 decimal = 1.175;
+  m4 decimal = -0.0023;
+  p1 decimal = 111412.84;
+  p2 decimal = -93.5;
+  p3 decimal = 0.118;
 
   lat decimal;
   lat_len decimal;
   lon_len decimal;
-  
-BEGIN 
+
+BEGIN
   lat = ST_Y(point) * PI()/180.0;
   lat_len  = m1 + (m2 * COS(2 * lat)) + (m3 * COS(4 * lat)) + (m4 * COS(6 * lat));
   lon_len = (p1 * COS(lat)) + (p2 * COS(3 * lat)) + (p3 * COS(5 * lat));
