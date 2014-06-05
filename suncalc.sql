@@ -1,7 +1,7 @@
 ﻿-- DROP FUNCTION suncalc(timestamp, geometry);
 CREATE OR REPLACE FUNCTION suncalc(date timestamp, coord geometry) RETURNS point AS $$
 
--- calculations based on agorithms from http://aa.quae.nl/en/reken/zonpositie.html
+-- calculations based on algorithms from http://aa.quae.nl/en/reken/zonpositie.html
 -- code taken from Vladimir Agafonkin's (@mourner) SunCalc https://github.com/mourner/suncalc
 -- few modifications by Jan Marsch, OSM Buildings (@kekscom)
 -- code migration to PostgreSQL by Sören Horn, OSM Buildings (@SoerenHorn85)
