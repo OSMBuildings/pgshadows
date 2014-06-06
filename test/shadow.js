@@ -21,11 +21,11 @@ function shadow(date, center, polygon, height) {
     x2 = polygon[i+1].x;
     y2 = polygon[i+1].y;
 
-    _x1 = x1 + dir.x*height / gm.x;
-    _y1 = y1 + dir.y*height / gm.y;
+    _x1 = x1 + dir.x*height / gm.y;
+    _y1 = y1 + dir.y*height / gm.x;
 
-    _x2 = x2 + dir.x*height / gm.x;
-    _y2 = y2 + dir.y*height / gm.y;
+    _x2 = x2 + dir.x*height / gm.y;
+    _y2 = y2 + dir.y*height / gm.x;
 
     // mode 0: floor edges, mode 1: roof edges
     if ((x2-x1) * (_y1-y1) > (_x1-x1) * (y2-y1)) {
@@ -53,7 +53,7 @@ function shadow(date, center, polygon, height) {
   for (var i = 0; i < res.length; i++) {
     coordinates[i] = [ res[i].x, res[i].y ];
   }
-  
+
   return { type:'LineString', coordinates:coordinates };
   //return res;
 }
