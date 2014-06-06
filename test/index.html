@@ -1,13 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
+<link rel="stylesheet" href="js/leaflet-0.7/leaflet.css">
+<style>
+#map {
+  width: 500px;
+  height: 500px;
+}
+label {
+  height: 20px;
+}
+
+</style>
+<script src="js/leaflet-0.7/leaflet.js"></script>
+<script src="js/OSMBuildings-Leaflet.debug.js"></script>
 <script src="suncalc.js"></script>
 <script src="geometers.js"></script>
 <script src="shadow.js"></script>
 <script>
-var dateStr = '2014-07-25T18:00:00';
-var lat = 52.54;
-var lon = 13.44;
+var dateStr = '2014-05-15T10:00:00';
+var date = new Date(dateStr);
+var lat = 52.54342;
+var lon = 13.44256;
 var coordinates = [
   { x:13.44189, y:52.54334 },
   { x:13.44271, y:52.54299 },
@@ -16,8 +30,10 @@ var coordinates = [
   { x:13.44189, y:52.54334 }
 ];
 
-var sunPos = suncalc(new Date(dateStr), lat, lon);
+var sunPos = suncalc(date, lat, lon);
 console.log('SUN POS >>', dateStr, lat, lon, sunPos);
+
+console.log('SUN POS OSMB >>', getSunPosition(date, lat, lon));
 
 var length = Math.tan(sunPos.altitude);
 var vec = {
@@ -29,7 +45,73 @@ console.log('SUN VECTOR >>', vec);
 
 console.log('DEG TO METERS >>', lat, geometers(lat));
 
-console.log('SHADOW >>', JSON.stringify(shadow(new Date(dateStr), { x:13.44, y:52.54 }, coordinates, 20)));
+console.log(JSON.stringify(shadow(date, { x:lon, y:lat }, coordinates, 20)));
+
+var map, osmb;
+document.addEventListener('DOMContentLoaded', function() {
+  map = new L.Map('map').setView([lat, lon], 18);
+  new L.TileLayer('http://{s}.tiles.mapbox.com/v3/osmbuildings.gm744p3p/{z}/{x}/{y}.png').addTo(map);
+  osmb = new OSMBuildings(map).loadData();
+});
 </script>
 </head>
+
+<body>
+<div id="map"></div>
+<input id="date" type="range" min="1" max="365" step="1"><label for="date"></label><br>
+<input id="time" type="range" min="0" max="23" step="1"><label for="time"></label>
+
+<script>
+var
+  now,
+  date, time,
+  timeRange, dateRange,
+  timeRangeLabel, dateRangeLabel;
+
+function changeDate() {
+  var Y = now.getFullYear(),
+    M = now.getMonth(),
+    D = now.getDate(),
+    h = now.getHours(),
+    m = 0;
+
+  timeRangeLabel.innerText = pad(h) + ':' + pad(m);
+  dateRangeLabel.innerText = Y + '-' + pad(M+1) + '-' + pad(D);
+
+  osmb.setDate(new Date(Y, M, D, h, m));
+}
+
+function pad(v) {
+  return (v < 10 ? '0' : '') + v;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  timeRange = document.querySelector('#time');
+  dateRange = document.querySelector('#date');
+  timeRangeLabel = document.querySelector('label[for=time]');
+  dateRangeLabel = document.querySelector('label[for=date]');
+
+  now = date;
+  changeDate();
+
+  // init with day of year
+  var Jan1 = new Date(now.getFullYear(), 0, 1);
+  dateRange.value = Math.ceil((now-Jan1)/86400000);
+
+  timeRange.value = now.getHours();
+
+  timeRange.addEventListener('change', function() {
+    now.setHours(this.value);
+    now.setMinutes(0);
+    changeDate();
+  }, false);
+
+  dateRange.addEventListener('change ', function() {
+    now.setMonth(0);
+    now.setDate(this.value);
+    changeDate();
+  }, false);
+});
+</script>
+</body>
 </html>
