@@ -18,7 +18,7 @@ label {
 <script src="geometers.js"></script>
 <script src="shadow.js"></script>
 <script>
-var dateStr = '2014-05-15T10:00:00';
+var dateStr = '2014-06-06T06:00:00+02:00';
 var date = new Date(dateStr);
 var lat = 52.54342;
 var lon = 13.44256;
@@ -46,7 +46,7 @@ console.log('SUN VECTOR >>', vec);
 
 console.log('DEG TO METERS >>', lat, geometers(lat));
 
-console.log(JSON.stringify(shadow(date, { x:lon, y:lat }, coordinates, 20)));
+console.log(JSON.stringify(shadow(date, { x:lon, y:lat }, coordinates, 15)));
 
 var map, osmb;
 document.addEventListener('DOMContentLoaded', function() {
