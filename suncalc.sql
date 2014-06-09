@@ -40,6 +40,7 @@ DECLARE
   azimuth decimal;
 
 BEGIN
+  coord = ST_Transform(coord, 4326);
   date_s = date_part('epoch', date);
   in_julian = date_s/day_s - 0.5 + j1970 - j2000;
   solar_mean_anomaly = rad * (357.5291 + 0.98560028*in_julian);

@@ -1,11 +1,9 @@
 function shadow(date, center, polygon, height) {
   var sunpos = suncalc(date, center.y, center.x);
 
-  var gm = geometers(center.y);
-
   var dir = {
-    x: Math.cos(sunpos.azimuth) / Math.tan(sunpos.altitude) / gm.x,
-    y: Math.sin(sunpos.azimuth) / Math.tan(sunpos.altitude) / gm.y
+    x: Math.cos(sunpos.azimuth) / Math.tan(sunpos.altitude),
+    y: Math.sin(sunpos.azimuth) / Math.tan(sunpos.altitude)
   };
 
   var

@@ -15,7 +15,6 @@ label {
 <script src="js/leaflet-0.7/leaflet.js"></script>
 <script src="js/OSMBuildings-Leaflet.debug.js"></script>
 <script src="suncalc.js"></script>
-<script src="geometers.js"></script>
 <script src="shadow.js"></script>
 <script>
 var dateStr = '2014-06-06T06:00:00+02:00';
@@ -42,8 +41,6 @@ var vec = {
 };
 
 console.log('SUN VECTOR >>', vec);
-
-console.log('DEG TO METERS >>', lat, geometers(lat));
 
 console.log(JSON.stringify(shadow(date, { x:lon, y:lat }, coordinates, 15)));
 
