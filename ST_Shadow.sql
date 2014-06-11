@@ -1,6 +1,7 @@
 ﻿
---DROP FUNCTION shadow(sunpos, geometry, numeric);
-CREATE OR REPLACE FUNCTION ST_Shadow(sunpos vector, geom geometry, height decimal) RETURNS geometry
+--DROP FUNCTION st_shadow(timestamp, geometry, numeric);
+--CREATE OR REPLACE FUNCTION ST_Shadow(sunpos vector, geom geometry, height decimal) RETURNS geometry
+CREATE OR REPLACE FUNCTION ST_Shadow(date timestamp, geom geometry, height decimal) RETURNS geometry
 AS $$
 
 DECLARE
@@ -11,6 +12,7 @@ DECLARE
 
   p geometry;
   line geometry;
+  geom_Centroid geometry;
   x decimal;
   y decimal;
 
@@ -25,9 +27,15 @@ DECLARE
   _y2 decimal;
 
   sun_vector vector;
+  sunpos vector;
   src_srid integer = ST_SRID(geom);
 
 BEGIN
+  geom_Centroid = ST_Centroid(geom);
+  
+  sunpos.x = (suncalc(date, geom_Centroid)).x;
+  sunpos.y = (suncalc(date, geom_Centroid)).y;
+    
   IF sunpos.y < 0 THEN
     RETURN NULL;
   END IF;
@@ -36,8 +44,8 @@ BEGIN
   sun_vector.y = SIN(sunpos.x) / TAN(sunpos.y);
 
   src_line = ST_Transform(ST_ExteriorRing(geom), 900913);
-  dst_line = ST_GeomFromText(ST_SetSRID('LINESTRING(0 0, 1 1)', src_srid));
-
+  dst_line = ST_SetSRID(ST_GeomFromText('LINESTRING(0 0, 1 1)'), src_srid);
+  
   FOR i IN 0..ST_NPoints(src_line)-2 LOOP
      x1 = ST_X(ST_PointN(src_line, i+1));
      y1 = ST_Y(ST_PointN(src_line, i+1));
@@ -79,8 +87,8 @@ BEGIN
 
   SELECT ST_RemovePoint(dst_line, 0) INTO dst_line;
   SELECT ST_RemovePoint(dst_line, 0) INTO dst_line;
-
-  RETURN ST_MakePolygon(dst_line));
+  
+  RETURN ST_MakePolygon(dst_line);
 END;
 
 $$ LANGUAGE plpgsql;
@@ -90,10 +98,10 @@ $$ LANGUAGE plpgsql;
 --   SIN((suncalc('2014-05-15 10:30:00Z', ST_PointFromText('POINT(13.37 52.52)'))).x)/TAN((suncalc('2014-05-15 10:30:00Z', ST_PointFromText('POINT(13.37 52.52)'))).y) AS y;
 
 SELECT
- 'POLYGON ((13.441895842552185 52.5433400349193, 13.442716598510742 52.54299095345783, 13.443360328674315 52.543565142053, 13.442534208297728 52.54391421894826, 13.441895842552185 52.5433400349193))' AS poly,
+ --'POLYGON ((13.441895842552185 52.5433400349193, 13.442716598510742 52.54299095345783, 13.443360328674315 52.543565142053, 13.442534208297728 52.54391421894826, 13.441895842552185 52.5433400349193))' AS poly,
  ST_ASGeoJSON(
   ST_Shadow(
-    suncalc('2014-08-26 18:00:00+02', ST_PointFromText('POINT(13.44 52.54)')),
+    '2014-05-15 18:30:00',
     ST_GeomFromText('POLYGON ((13.441895842552185 52.5433400349193, 13.442716598510742 52.54299095345783, 13.443360328674315 52.543565142053, 13.442534208297728 52.54391421894826, 13.441895842552185 52.5433400349193))', 4326),
     20.0
   ), 4

@@ -58,4 +58,4 @@ END;
 
 $$ LANGUAGE plpgsql;
 
-SELECT suncalc('2014-05-15 10:30:00', ST_PointFromText('POINT(13.37 52.52)'));
+SELECT suncalc('2014-05-15 10:30:00', ST_PointFromText('POINT(13.37 52.52)', 4326));
