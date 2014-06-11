@@ -1,4 +1,4 @@
-﻿
+
 -- DROP FUNCTION ST_Shadow(timestamp, geometry, numeric);
 CREATE OR REPLACE FUNCTION ST_Shadow(date timestamp, geom geometry, height decimal) RETURNS geometry
 AS $$
@@ -26,7 +26,6 @@ DECLARE
   sun_vector vector;
 
 BEGIN
-  
   sun_pos = suncalc(date, ST_Centroid(geom));
     
   IF sun_pos.y < 0 THEN
@@ -83,7 +82,6 @@ BEGIN
   dst_line = ST_RemovePoint(dst_line, 0);
 
   RETURN ST_Transform(ST_MakePolygon(dst_line), src_srid);
-
 END;
 
 $$ LANGUAGE plpgsql;
@@ -98,5 +96,3 @@ SELECT
     ST_GeomFromText('POLYGON ((13.441895842552185 52.5433400349193, 13.442716598510742 52.54299095345783, 13.443360328674315 52.543565142053, 13.442534208297728 52.54391421894826, 13.441895842552185 52.5433400349193))', 4326),
     15.0), 4
   );
-
-
