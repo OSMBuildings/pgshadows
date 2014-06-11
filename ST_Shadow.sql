@@ -1,5 +1,4 @@
-﻿
---DROP FUNCTION st_shadow(timestamp, geometry, numeric);
+﻿--DROP FUNCTION st_shadow(timestamp, geometry, numeric);
 --CREATE OR REPLACE FUNCTION ST_Shadow(sunpos vector, geom geometry, height decimal) RETURNS geometry
 CREATE OR REPLACE FUNCTION ST_Shadow(date timestamp, geom geometry, height decimal) RETURNS geometry
 AS $$
@@ -44,7 +43,7 @@ BEGIN
   sun_vector.y = SIN(sunpos.x) / TAN(sunpos.y);
 
   src_line = ST_Transform(ST_ExteriorRing(geom), 900913);
-  dst_line = ST_SetSRID(ST_GeomFromText('LINESTRING(0 0, 1 1)'), src_srid);
+  dst_line = ST_GeomFromText('LINESTRING(0 0, 1 1)');
   
   FOR i IN 0..ST_NPoints(src_line)-2 LOOP
      x1 = ST_X(ST_PointN(src_line, i+1));
@@ -88,7 +87,7 @@ BEGIN
   SELECT ST_RemovePoint(dst_line, 0) INTO dst_line;
   SELECT ST_RemovePoint(dst_line, 0) INTO dst_line;
   
-  RETURN ST_MakePolygon(dst_line);
+  RETURN ST_Transform(ST_SetSRID(ST_MakePolygon(dst_line), 900913), src_srid);
 END;
 
 $$ LANGUAGE plpgsql;
