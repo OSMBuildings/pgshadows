@@ -1,4 +1,6 @@
+﻿-- geom can be a Polygon or MultiPolygon, inner rings are not supported yet
 
+-- DROP FUNCTION ST_Shadow(vector, geometry, numeric);
 -- DROP FUNCTION ST_Shadow(timestamp, geometry, numeric);
 CREATE OR REPLACE FUNCTION ST_Shadow(date timestamp, geom geometry, height decimal) RETURNS geometry
 AS $$
@@ -6,21 +8,21 @@ AS $$
 DECLARE
   i integer;
 
-  src_srid integer;
-  src_line geometry;
-  dst_line geometry;
+  poly geometry;
+  poly_srid integer;
 
-  m integer = -1;
+  footprint geometry;
+  shadow geometry;
+  shadow_poly geometry;
+  result geometry;
 
-   x1 decimal;
-   y1 decimal;
-  _x1 decimal;
-  _y1 decimal;
-
-   x2 decimal;
-   y2 decimal;
-  _x2 decimal;
-  _y2 decimal;
+  x decimal;
+  y decimal;
+  
+  f1 geometry;
+  f2 geometry;
+  s1 geometry;
+  s2 geometry;
 
   sun_pos vector;
   sun_vector vector;
@@ -35,60 +37,44 @@ BEGIN
   sun_vector.x = COS(sun_pos.x) / TAN(sun_pos.y);
   sun_vector.y = SIN(sun_pos.x) / TAN(sun_pos.y);
 
-  src_srid = ST_SRID(geom);
-  src_line = ST_Transform(ST_ExteriorRing(geom), 900913);
-  dst_line = ST_GeomFromText('LINESTRING(0 0, 1 1)', 900913);
+  poly = ST_GeometryN(geom, 1);
 
-  FOR i IN 0..ST_NPoints(src_line)-2 LOOP
-     x1 = ST_X(ST_PointN(src_line, i+1));
-     y1 = ST_Y(ST_PointN(src_line, i+1));
-    _x1 = x1 + sun_vector.x*height;
-    _y1 = y1 - sun_vector.y*height;
+  IF ST_GeometryType(poly) != 'ST_Polygon' THEN
+    RETURN NULL;
+  END IF;
 
-     x2 = ST_X(ST_PointN(src_line, i+2));
-     y2 = ST_Y(ST_PointN(src_line, i+2));
-    _x2 = x2 + sun_vector.x*height;
-    _y2 = y2 - sun_vector.y*height;
+  poly_srid = ST_SRID(geom);
 
-    -- m:0 => floor edges, m:1 => shadow edges
-    IF ((x2-x1) * (_y1-y1) > (_x1-x1) * (y2-y1)) THEN
-      IF m = 1 THEN
-        dst_line = ST_AddPoint(dst_line, ST_MakePoint(x1, y1));
-      END IF;
+  footprint   = ST_Transform(ST_ExteriorRing(poly), 900913);
+  shadow      = ST_Translate(footprint, sun_vector.x*height, sun_vector.y*height);
+  shadow_poly = ST_MakePolygon(shadow);
+  result      = ST_GeomFromText('LINESTRING(0 0, 1 1)', 900913);
 
-      m = 0;
+  FOR i IN 0..ST_NPoints(footprint)-2 LOOP
+    f1 = ST_PointN(footprint, i+1);
+    f2 = ST_PointN(footprint, i+2);
+    s1 = ST_PointN(shadow, i+1);
+    s2 = ST_PointN(shadow, i+2);
 
-      IF i = 0 THEN
-        dst_line = ST_AddPoint(dst_line, ST_MakePoint(x1, y1));
-      END IF;
-
-      dst_line = ST_AddPoint(dst_line, ST_MakePoint(x2, y2));
+    IF ST_Contains(shadow_poly, f1) THEN
+      result = ST_AddPoint(result, s1);
+      result = ST_AddPoint(result, s2);
     ELSE
-      IF m = 0 THEN
-        dst_line = ST_AddPoint(dst_line, ST_MakePoint(_x1, _y1));
+      result = ST_AddPoint(result, f1);
+      IF ST_Contains(shadow_poly, f2) THEN
+	result = ST_AddPoint(result, s1);
       END IF;
-
-      m = 1;
-
-      IF i = 0 THEN
-        dst_line = ST_AddPoint(dst_line, ST_MakePoint(_x1, _y1));
-      END IF;
-
-      dst_line = ST_AddPoint(dst_line, ST_MakePoint(_x2, _y2));
     END IF;
   END LOOP;
 
-  dst_line = ST_RemovePoint(dst_line, 0);
-  dst_line = ST_RemovePoint(dst_line, 0);
+  result = ST_RemovePoint(result, 0);
+  result = ST_RemovePoint(result, 0);
+  result = ST_AddPoint(result, ST_PointN(result, 1));
 
-  RETURN ST_Transform(ST_MakePolygon(dst_line), src_srid);
+  RETURN ST_Transform(ST_MakePolygon(result), poly_srid);
 END;
 
 $$ LANGUAGE plpgsql;
-
--- SELECT
---   COS((suncalc('2014-05-15 10:30:00Z', ST_PointFromText('POINT(13.37 52.52)'))).x)/TAN((suncalc('2014-05-15 10:30:00Z', ST_PointFromText('POINT(13.37 52.52)'))).y) AS X,
---   SIN((suncalc('2014-05-15 10:30:00Z', ST_PointFromText('POINT(13.37 52.52)'))).x)/TAN((suncalc('2014-05-15 10:30:00Z', ST_PointFromText('POINT(13.37 52.52)'))).y) AS y;
 
 SELECT
   ST_ASGeoJSON(ST_Shadow(
@@ -96,3 +82,5 @@ SELECT
     ST_GeomFromText('POLYGON ((13.441895842552185 52.5433400349193, 13.442716598510742 52.54299095345783, 13.443360328674315 52.543565142053, 13.442534208297728 52.54391421894826, 13.441895842552185 52.5433400349193))', 4326),
     15.0), 4
   );
+
+SELECT cartodb_id, ST_Shadow('2014-05-15T08:00:00', the_geom, 15.0) AS sx, the_geom_webmercator FROM berlin_filtered WHERE ST_GeometryType(the_geom) = 'ST_Polygon' OR ST_GeometryType(the_geom) = 'ST_MultiPolygon';
